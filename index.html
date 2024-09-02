@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #282c34;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .header {
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #61dafb;
+            color: #282c34;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #21a1f1;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            text-align: center;
+            background-color: #1c1e24;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 800px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #lists {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .list {
+            margin-top: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #2c2f36;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .list:hover {
+            transform: translateY(-5px);
+        }
+
+        .list h3 {
+            margin: 0;
+            color: #61dafb;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .options {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .characters {
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #f0f0f0;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            color: #333;
+            text-align: right;
+        }
+
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        input[type="text"], textarea, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        .character {
+            background-color: #353b48;
+            color: #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .character-info {
+            flex: 1;
+            padding: 0 20px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .character-info h4 {
+            margin-top: 0;
+            margin-bottom: -8px;
+            color: #61dafb;
+            font-size: 1.5em;
+        }
+
+        .character-info p {
+            margin-bottom: 5px;
+            color: #ccc;
+            font-size: 1em;
+        }
+
+        .character-info small {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .character-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: -4px;
+            margin-top: 30px;
+            border: 2px solid #61dafb;
+        }
+
+        .character .delete-character-btn,
+        .character .edit-character-btn {
+            background-color: #d9534f;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .character .delete-character-btn:hover,
+        .character .edit-character-btn:hover {
+            background-color: #c9302c;
+        }
+
+        .video-modal {
+            display: none;
+            position: fixed;
+            z-index: 2;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .video-content {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button id="create-list-btn"><i class="fas fa-plus"></i> إنشاء قائمة</button>
+        <button id="save-update-btn"><i class="fas fa-save"></i> حفظ وتحديث</button>
+    </div>
+
+    <div class="container">
+        <div id="lists"></div>
+    </div>
+
+    <!-- Form to create a new list -->
+    <div id="list-form-container" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <h2>إنشاء قائمة جديدة</h2>
+            <input type="text" id="list-title" placeholder="عنوان القائمة">
+            <button id="save-list-btn">حفظ</button>
+        </div>
+    </div>
+
+    <!-- Form to add or edit a character to a list -->
+    <div id="character-form-container" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <h2 id="character-form-title">إضافة شخصية للقائمة</h2>
+            <input type="hidden" id="character-id">
+            <input type="text" id="character-title" placeholder="الاسم">
+            <textarea id="character-description" placeholder="النبذة"></textarea>
+            <input type="file" id="character-image" accept="image/*">
+            <button id="save-character-btn">حفظ</button>
+        </div>
+    </div>
+
+    <!-- Video ad modal -->
+    <div id="video-modal" class="video-modal">
+        <video class="video-content" autoplay controls muted>
+            <source src="https://firebasestorage.googleapis.com/v0/b/mare-c9dc2.appspot.com/o/%D8%AA%D8%B1%D9%88%D9%8A%D8%AC%2Flv_0_%D9%A2%D9%A0%D9%A2%D9%A4%D9%A0%D9%A4%D9%A2%D9%A7%D9%A2%D9%A2%D9%A1%D9%A9%D9%A4%D9%A3.mp4?alt=media&token=70dcb001-0ebe-4812-99d2-ec21898048d2" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+    <script>
+        let lists = [];
+        let freeListsRemaining = 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
+
+        // Function to create a list element
+        function createListElement(listId, listTitle) {
+            const listElement = document.createElement('div');
+            listElement.id = listId;
+            listElement.className = 'list';
+            listElement.innerHTML = `
+                <h3 class="list-title">${listTitle}</h3>
+
+                <div class="options">
+                    <button class="add-character-btn"><i class="fas fa-user"></i> + إضافة </button>
+                    <button class="show-characters-btn"><i class="fas fa-eye"></i> عرض</button>
+                    <button class="delete-list-btn"><i class="fas fa-trash"></i> حذف </button>
+                </div>
+                <div class="characters"></div>
+            `;
+
+            listElement.querySelector('.list-title').addEventListener('click', () => {
+                const options = listElement.querySelector('.options');
+                options.style.display = options.style.display === 'block' ? 'none' : 'block';
+            });
+
+            listElement.querySelector('.add-character-btn').addEventListener('click', () => {
+                if (freeListsRemaining > 0) {
+                    showCharacterForm(listId);
+                } else {
+                    showVideoAdModal(() => {
+                        freeListsRemaining++;
+                        showCharacterForm(listId);
+                    });
+                }
+            });
+
+            listElement.querySelector('.show-characters-btn').addEventListener('click', () => {
+                const charactersContainer = listElement.querySelector('.characters');
+                charactersContainer.style.display = charactersContainer.style.display === 'block' ? 'none' : 'block';
+            });
+
+            listElement.querySelector('.delete-list-btn').addEventListener('click', () => {
+                if (confirm('هل أنت متأكد من حذف القائمة؟')) {
+                    lists = lists.filter(list => list.id !== listId);
+                    saveLists();
+                    listElement.remove();
+                }
+            });
+
+            return listElement;
+        }
+
+        // Function to create a character element
+        function createCharacterElement(characterId, characterTitle, characterDescription, characterImage, listId) {
+            const characterElement = document.createElement('div');
+            characterElement.className = 'character';
+            characterElement.innerHTML = `
+                <img class="character-image" src="${characterImage}" alt="${characterTitle}">
+                <div class="character-info">
+                    <h4 class="character-title">${characterTitle}</h4>
+                    <p class="character-description">${characterDescription}</p>
+                    <small>القائمة: ${getListTitleById(listId)}</small>
+                </div>
+                <button class="edit-character-btn"><i class="fas fa-edit"></i> تعديل</button>
+                <button class="delete-character-btn"><i class="fas fa-trash"></i> حذف</button>
+            `;
+            characterElement.dataset.characterId = characterId;
+
+            characterElement.querySelector('.edit-character-btn').addEventListener('click', () => {
+                showCharacterForm(listId, characterElement);
+            });
+
+            characterElement.querySelector('.delete-character-btn').addEventListener('click', () => {
+                if (confirm('هل أنت متأكد من حذف الشخصية؟')) {
+                    const list = lists.find(list => list.id === listId);
+                    list.characters = list.characters.filter(char => char.id !== characterId);
+                    saveLists();
+                    characterElement.remove();
+                }
+            });
+
+            return characterElement;
+        }
+
+        // Function to display the character form
+        function showCharacterForm(listId, characterElement = null) {
+            const characterFormTitle = document.getElementById('character-form-title');
+            const saveCharacterBtn = document.getElementById('save-character-btn');
+            const characterIdInput = document.getElementById('character-id');
+            const characterTitleInput = document.getElementById('character-title');
+            const characterDescriptionInput = document.getElementById('character-description');
+            const characterImageInput = document.getElementById('character-image');
+
+            if (characterElement) {
+                characterFormTitle.innerText = 'تعديل شخصية';
+                characterIdInput.value = characterElement.dataset.characterId;
+                characterTitleInput.value = characterElement.querySelector('.character-title').textContent.trim();
+                characterDescriptionInput.value = characterElement.querySelector('.character-description').textContent.trim();
+                characterImageInput.style.display = 'none'; // Hide image input
+            } else {
+                characterFormTitle.innerText = 'إضافة شخصية للقائمة';
+                characterIdInput.value = '';
+                characterTitleInput.value = '';
+                characterDescriptionInput.value = '';
+                characterImageInput.style.display = 'block'; // Show image input
+            }
+
+            saveCharacterBtn.onclick = () => {
+                const characterId = characterIdInput.value;
+                const characterTitle = characterTitleInput.value.trim();
+                const characterDescription = characterDescriptionInput.value.trim();
+                const characterImage = characterImageInput.files[0];
+
+                if (characterElement) {
+                    // Update existing character
+                    if (characterTitle) {
+                        characterElement.querySelector('.character-title').textContent = characterTitle;
+                    }
+                    if (characterDescription) {
+                        characterElement.querySelector('.character-description').textContent = characterDescription;
+                    }
+
+                    const list = lists.find(list => list.id === listId);
+                    const characterToUpdate = list.characters.find(char => char.id === characterId);
+                    if (characterTitle) characterToUpdate.title = characterTitle;
+                    if (characterDescription) characterToUpdate.description = characterDescription;
+                } else {
+                    // Add new character
+                    if (characterTitle && characterDescription && characterImage) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const characterId = Date.now().toString();
+                            const characterElement = createCharacterElement(characterId, characterTitle, characterDescription, event.target.result, listId);
+                            const charactersContainer = document.getElementById(listId).querySelector('.characters');
+                            charactersContainer.appendChild(characterElement);
+
+                            const list = lists.find(list => list.id === listId);
+                            list.characters.push({ id: characterId, title: characterTitle, description: characterDescription, image: event.target.result });
+
+                            saveLists();
+                            document.getElementById('character-form-container').style.display = 'none';
+                        };
+                        reader.readAsDataURL(characterImage);
+                    } else {
+                        alert('الرجاء ملء كافة الحقول.');
+                    }
+                }
+
+                saveLists();
+                document.getElementById('character-form-container').style.display = 'none';
+            };
+
+            document.getElementById('character-form-container').style.display = 'flex';
+        }
+
+        // Function to get list title by its ID
+        function getListTitleById(listId) {
+            const list = lists.find(list => list.id === listId);
+            return list ? list.title : '';
+        }
+
+        // Function to save lists to local storage
+        function saveLists() {
+            localStorage.setItem('lists', JSON.stringify(lists));
+        }
+
+        // Function to load lists from local storage
+        function loadLists() {
+            const storedLists = localStorage.getItem('lists');
+            if (storedLists) {
+                lists = JSON.parse(storedLists);
+                lists.forEach(list => {
+                    const listElement = createListElement(list.id, list.title);
+                    const listsContainer = document.getElementById('lists');
+                    listsContainer.appendChild(listElement);
+
+                    const charactersContainer = listElement.querySelector('.characters');
+                    list.characters.forEach(character => {
+                        const characterElement = createCharacterElement(character.id, character.title, character.description, character.image, list.id);
+                        charactersContainer.appendChild(characterElement);
+                    });
+                });
+            }
+        }
+
+        // Function to show video ad modal
+        function showVideoAdModal(callback) {
+            const videoModal = document.getElementById('video-modal');
+            const videoContent = videoModal.querySelector('.video-content');
+
+            videoModal.style.display = 'block';
+            videoContent.addEventListener('ended', () => {
+                videoModal.style.display = 'none';
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            });
+        }
+
+        // Event listeners
+        document.getElementById('create-list-btn').addEventListener('click', () => {
+            if (freeListsRemaining > 0) {
+                document.getElementById('list-form-container').style.display = 'block';
+            } else {
+                showVideoAdModal(() => {
+                    freeListsRemaining++;
+                    document.getElementById('list-form-container').style.display = 'block';
+                });
+            }
+        });
+
+        document.getElementById('save-list-btn').addEventListener('click', () => {
+            const listTitleInput = document.getElementById('list-title');
+            const listTitle = listTitleInput.value.trim();
+
+            if (listTitle) {
+                const listId = Date.now().toString();
+                const listElement = createListElement(listId, listTitle);
+                const listsContainer = document.getElementById('lists');
+                listsContainer.appendChild(listElement);
+
+                lists.push({ id: listId, title: listTitle, characters: [] });
+                saveLists();
+                listTitleInput.value = '';
+                document.getElementById('list-form-container').style.display = 'none';
+                freeListsRemaining--;
+            } else {
+                alert('الرجاء إدخال عنوان للقائمة.');
+            }
+        });
+
+        document.getElementById('save-update-btn').addEventListener('click', () => {
+            saveLists();
+            alert('تم حفظ التحديثات بنجاح.');
+        });
+
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', () => {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            });
+        });
+
+        // Initial load
+        loadLists();
+    </script>
+</body>
+</html>
